@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Place an Order</title>
+<meta name="theme-color" content="#0f3d5c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Order">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root {
+    --navy: #0f3d5c; --teal: #127a74; --teal-soft: #e3f2f0; --amber: #e8a317; --amber-soft: #fff4dc;
+    --red: #b4372b; --red-soft: #fbe6e3; --ink: #17212b; --muted: #5d6b78; --line: #e2e7ec;
+    --bg: #f5f7f9; --card: #ffffff; --radius: 14px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; }
+  body {
+    font: 16px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink); background: var(--bg); padding-bottom: 110px;
+  }
+  header {
+    background: var(--navy); color: #fff; padding: calc(14px + env(safe-area-inset-top)) 16px 16px;
+    position: sticky; top: 0; z-index: 5;
+  }
+  header .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; max-width: 560px; margin: 0 auto; }
+  header h1 { font-size: 19px; margin: 0; letter-spacing: .2px; }
+  header .who { font-size: 13px; opacity: .85; text-align: right; }
+  header .who b { display: block; font-size: 15px; color: var(--amber); opacity: 1; }
+  main { max-width: 560px; margin: 0 auto; padding: 12px 16px; }
+  .banner { border-radius: 10px; padding: 10px 12px; margin: 0 0 12px; font-size: 14px; display: flex; gap: 10px; align-items: center; }
+  .banner.warn { background: var(--amber-soft); color: #6b4a00; }
+  .banner.err { background: var(--red-soft); color: var(--red); }
+  .banner.info { background: var(--teal-soft); color: #0b4f4a; }
+  .banner button { margin-left: auto; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; }
+  .card h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 0 0 10px; }
+  label { display: block; font-size: 14px; color: var(--muted); margin: 0 0 4px; }
+  input[type=text], input[type=tel], input[type=date], textarea {
+    width: 100%; font: inherit; padding: 11px 12px; border: 1px solid #cfd7df; border-radius: 10px; background: #fff; color: var(--ink);
+  }
+  input:focus, textarea:focus { outline: 2px solid var(--teal); outline-offset: 0; border-color: var(--teal); }
+  .field { margin-bottom: 12px; }
+  .field:last-child { margin-bottom: 0; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .prod { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .prod:first-of-type { border-top: 0; padding-top: 2px; }
+  .prod .nm { flex: 1; min-width: 0; }
+  .prod .nm b { display: block; font-weight: 600; }
+  .prod .nm span { font-size: 13px; color: var(--muted); }
+  .prod.on .nm b { color: var(--teal); }
+  .stepper { display: flex; align-items: center; border: 1px solid #cfd7df; border-radius: 12px; overflow: hidden; background: #fff; }
+  .prod.on .stepper { border-color: var(--teal); }
+  .stepper button { width: 42px; height: 42px; border: 0; background: #f0f3f6; font-size: 22px; color: var(--navy); cursor: pointer; }
+  .stepper button:active { background: #dde4ea; }
+  .stepper input { width: 58px; height: 42px; border: 0; text-align: center; font-family: inherit; font-weight: 600; font-size: 17px; color: var(--ink); -moz-appearance: textfield; }
+  .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .btn { font-family: inherit; font-weight: 600; font-size: 16px; line-height: 1; display: block; border: 0; border-radius: 12px; padding: 15px 18px; cursor: pointer; }
+  .btn.primary { background: var(--teal); color: #fff; width: 100%; }
+  .btn.primary:disabled { background: #9fb5b3; }
+  .btn.ghost { background: transparent; color: var(--navy); border: 1px solid #cfd7df; }
+  .btn.wa { background: #1fa855; color: #fff; width: 100%; }
+  .btn.small { padding: 8px 12px; font-size: 14px; border-radius: 9px; }
+  .bar {
+    position: fixed; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,.96); border-top: 1px solid var(--line);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); z-index: 6; backdrop-filter: blur(6px);
+  }
+  .bar .inner { max-width: 560px; margin: 0 auto; }
+  .sheet-bg { position: fixed; inset: 0; background: rgba(15, 30, 45, .45); z-index: 10; display: none; align-items: flex-end; justify-content: center; }
+  .sheet-bg.open { display: flex; }
+  .sheet {
+    background: #fff; width: 100%; max-width: 560px; border-radius: 18px 18px 0 0; padding: 18px 16px calc(16px + env(safe-area-inset-bottom));
+    max-height: 88vh; overflow: auto;
+  }
+  .sheet h3 { margin: 0 0 4px; font-size: 20px; }
+  .sheet .sub { color: var(--muted); font-size: 14px; margin-bottom: 14px; }
+  .lines { list-style: none; padding: 0; margin: 0 0 14px; border: 1px solid var(--line); border-radius: 12px; }
+  .lines li { display: flex; justify-content: space-between; padding: 11px 12px; border-top: 1px solid var(--line); }
+  .lines li:first-child { border-top: 0; }
+  .lines li b { font-variant-numeric: tabular-nums; }
+  .actions { display: grid; gap: 10px; }
+  .done { text-align: center; padding: 8px 0 4px; }
+  .done .big { font-size: 40px; font-weight: 800; color: var(--navy); letter-spacing: .5px; margin: 4px 0; }
+  .pill { display: inline-block; padding: 5px 10px; border-radius: 99px; font-size: 13px; font-weight: 600; }
+  .pill.teal { background: var(--teal-soft); color: #0b4f4a; }
+  .pill.amber { background: var(--amber-soft); color: #6b4a00; }
+  .pill.red { background: var(--red-soft); color: var(--red); }
+  .hist li { font-size: 14px; }
+  .hist .when { color: var(--muted); font-size: 13px; }
+  .empty { color: var(--muted); font-size: 14px; }
+  .err-text { color: var(--red); font-size: 14px; margin-top: 8px; min-height: 0; }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink: #e8edf2; --muted: #9aa8b5; --line: #2a3644; --bg: #0f161d; --card: #17212b; --teal-soft: #123b38; --amber-soft: #3d2f0d; --red-soft: #3d1a17; }
+    input[type=text], input[type=tel], input[type=date], textarea, .stepper, .stepper input { background: #0f161d; color: var(--ink); border-color: #34414f; }
+    .stepper button { background: #222e3a; color: #cfe3f5; }
+    .bar { background: rgba(23,33,43,.96); }
+    .sheet { background: var(--card); }
+    .btn.ghost { color: #cfe3f5; border-color: #34414f; }
+    .done .big { color: #cfe3f5; }
+    .banner.warn { color: #f3d48a; } .banner.info { color: #9fe0d8; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="row">
+    <h1 id="shopName">Place an Order</h1>
+    <div class="who" id="who"></div>
+  </div>
+</header>
+
+<main>
+  <div id="banners"></div>
+
+  <section class="card">
+    <h2>Your details</h2>
+    <div class="field">
+      <label for="name">Name</label>
+      <input id="name" type="text" autocomplete="name" placeholder="e.g. Ahmed Khan">
+    </div>
+    <div class="two">
+      <div class="field">
+        <label for="phone">Phone (WhatsApp)</label>
+        <input id="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="402 555 0123">
+      </div>
+      <div class="field">
+        <label for="forDate">Needed on</label>
+        <input id="forDate" type="date">
+      </div>
+    </div>
+    <div class="hp" aria-hidden="true"><input id="website" type="text" tabindex="-1" autocomplete="off"></div>
+  </section>
+
+  <section class="card">
+    <h2>What would you like?</h2>
+    <div id="products"></div>
+  </section>
+
+  <section class="card">
+    <h2>Anything else?</h2>
+    <textarea id="notes" rows="2" placeholder="Cut style, cleaning, items not listed…"></textarea>
+  </section>
+
+  <section class="card" id="histCard" hidden>
+    <h2>Your recent orders</h2>
+    <ul class="lines hist" id="hist"></ul>
+  </section>
+</main>
+
+<div class="bar">
+  <div class="inner">
+    <button class="btn primary" id="reviewBtn" disabled>Choose items to order</button>
+    <div class="err-text" id="formErr"></div>
+  </div>
+</div>
+
+<div class="sheet-bg" id="sheetBg">
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+</div>
+
+<script>
+/* ===================== SETTINGS — edit these ===================== */
+const CONFIG = {
+  ENDPOINT: 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE', // ends with /exec
+  ORDER_KEY: 'change-this-key',                       // same value as ORDER_KEY in Code.gs
+  SHOP_NAME: 'Order Desk',
+  SHOP_WHATSAPP: '',  // optional, digits only with country code, e.g. '14025550123'. Blank = pick a chat/group.
+  // Used only until the page has loaded the list from the sheet once.
+  DEFAULT_PRODUCTS: [
+    { name: 'Drum Sticks', unit: 'lb', step: 1 },
+    { name: 'Leg Quarters', unit: 'lb', step: 1 },
+    { name: 'Whole Chicken', unit: 'lb', step: 1 },
+    { name: 'Whole Baby Goat', unit: 'each', step: 1 }
+  ]
+};
+/* ================================================================= */
+
+const $ = (id) => document.getElementById(id);
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+const configured = /^https:\/\/script\.google\.com\/.+\/exec$/.test(CONFIG.ENDPOINT);
+
+let products = LS.get('od_products', CONFIG.DEFAULT_PRODUCTS);
+let qty = {};          // product name -> number
+let sending = false;
+
+/* ---------- helpers ---------- */
+function uid() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  return 'x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+}
+function todayStr(offset = 0) {
+  const d = new Date(); d.setDate(d.getDate() + offset);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function fmtQty(q, unit) { return unit === 'lb' ? q + ' lb' : q + (q === 1 ? ' pc' : ' pcs'); }
+function fmtDate(s) {
+  if (!s) return '';
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+}
+function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function unitOf(name) { const p = products.find((x) => x.name === name); return p ? p.unit : 'lb'; }
+
+/* ---------- products ---------- */
+function renderProducts() {
+  const box = $('products');
+  box.innerHTML = products.map((p, i) => {
+    const v = qty[p.name] || 0;
+    return `<div class="prod${v ? ' on' : ''}" data-i="${i}">
+      <div class="nm"><b>${esc(p.name)}</b><span>${p.unit === 'lb' ? 'by the pound' : 'per piece'}</span></div>
+      <div class="stepper">
+        <button type="button" data-act="dec" aria-label="Less ${esc(p.name)}">−</button>
+        <input type="number" inputmode="${p.unit === 'lb' ? 'decimal' : 'numeric'}" min="0" step="${p.step || 1}"
+          value="${v || ''}" placeholder="0" aria-label="${esc(p.name)} quantity in ${p.unit === 'lb' ? 'pounds' : 'pieces'}">
+        <button type="button" data-act="inc" aria-label="More ${esc(p.name)}">+</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+$('products').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-act]'); if (!b) return;
+  const row = b.closest('.prod'); const p = products[row.dataset.i];
+  const step = Number(p.step) || 1;
+  let v = (qty[p.name] || 0) + (b.dataset.act === 'inc' ? step : -step);
+  v = Math.max(0, Math.round(v * 100) / 100);
+  setQty(p.name, v); row.querySelector('input').value = v || '';
+  row.classList.toggle('on', v > 0);
+});
+$('products').addEventListener('input', (e) => {
+  if (e.target.tagName !== 'INPUT') return;
+  const row = e.target.closest('.prod'); const p = products[row.dataset.i];
+  let v = parseFloat(e.target.value); if (!(v > 0)) v = 0;
+  if (p.unit === 'each') v = Math.floor(v);
+  setQty(p.name, v); row.classList.toggle('on', v > 0);
+});
+function setQty(name, v) { if (v > 0) qty[name] = v; else delete qty[name]; LS.set('od_draft', qty); updateBar(); }
+function chosen() { return products.filter((p) => qty[p.name] > 0).map((p) => ({ product: p.name, qty: qty[p.name], unit: p.unit })); }
+function updateBar() {
+  const n = chosen().length;
+  const b = $('reviewBtn');
+  b.disabled = n === 0;
+  b.textContent = n === 0 ? 'Choose items to order' : `Review order · ${n} item${n > 1 ? 's' : ''}`;
+  $('formErr').textContent = '';
+}
+
+async function loadProducts() {
+  if (!configured || !navigator.onLine) return;
+  try {
+    const res = await post({ action: 'products' }, 12000);
+    if (res.ok && Array.isArray(res.products) && res.products.length) {
+      products = res.products; LS.set('od_products', products);
+      if (res.shop) { CONFIG.SHOP_NAME = res.shop; LS.set('od_shop', res.shop); setTitle(); }
+      // drop draft items that are no longer sold
+      Object.keys(qty).forEach((k) => { if (!products.some((p) => p.name === k)) delete qty[k]; });
+      renderProducts(); updateBar();
+    }
+  } catch (e) { /* offline or slow: keep cached list */ }
+}
+
+/* ---------- network ---------- */
+async function post(payload, timeoutMs = 20000) {
+  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), timeoutMs);
+  try {
+    // text/plain keeps this a "simple" request, so Apps Script doesn't need to answer a CORS preflight.
+    const r = await fetch(CONFIG.ENDPOINT, {
+      method: 'POST', redirect: 'follow', signal: ctl.signal,
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(Object.assign({ key: CONFIG.ORDER_KEY }, payload))
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.json();
+  } finally { clearTimeout(t); }
+}
+
+/* ---------- outbox: orders are saved on the phone first, then sent ---------- */
+function outbox() { return LS.get('od_outbox', []); }
+function saveOutbox(list) { LS.set('od_outbox', list); renderBanners(); }
+
+async function flush() {
+  if (sending || !configured) return;
+  const list = outbox().filter((o) => o.state === 'pending');
+  if (!list.length) return;
+  sending = true; renderBanners();
+  try {
+    for (const item of list) {
+      let res;
+      try { res = await post({ action: 'order', order: item.order }); }
+      catch (e) { break; } // no signal — try again later
+      const all = outbox();
+      const idx = all.findIndex((o) => o.order.client_id === item.order.client_id);
+      if (res.ok) {
+        if (idx > -1) all.splice(idx, 1);
+        saveOutbox(all);
+        recordSent(item.order, res);
+        if (res.customer_no) { LS.set('od_customer_no', res.customer_no); renderWho(); }
+        if (currentSheet === item.order.client_id) showDone(item.order, res);
+      } else if (res.retry) {
+        break;
+      } else {
+        if (idx > -1) { all[idx].state = 'rejected'; all[idx].error = res.error || 'Not accepted'; }
+        saveOutbox(all);
+        if (currentSheet === item.order.client_id) showRejected(all[idx]);
+      }
+    }
+  } finally { sending = false; renderBanners(); }
+}
+
+function recordSent(order, res) {
+  const h = LS.get('od_history', []);
+  if (!h.some((x) => x.client_id === order.client_id)) {
+    h.unshift({ client_id: order.client_id, order_no: res.order_no, for_date: res.for_date || order.for_date,
+      items: order.items, at: Date.now() });
+  }
+  LS.set('od_history', h.slice(0, 8)); renderHistory();
+}
+
+/* ---------- review / confirm ---------- */
+let currentSheet = null;
+function openSheet(html) { $('sheet').innerHTML = html; $('sheetBg').classList.add('open'); }
+function closeSheet() { $('sheetBg').classList.remove('open'); currentSheet = null; }
+$('sheetBg').addEventListener('click', (e) => { if (e.target === $('sheetBg')) closeSheet(); });
+
+$('reviewBtn').addEventListener('click', () => {
+  const name = $('name').value.trim(), phone = $('phone').value.trim();
+  if (!name) { $('formErr').textContent = 'Please enter your name.'; $('name').focus(); return; }
+  if (phone.replace(/\D/g, '').length < 7) { $('formErr').textContent = 'Please enter your phone number.'; $('phone').focus(); return; }
+  LS.set('od_me', { name, phone });
+  const items = chosen(); const notes = $('notes').value.trim(); const forDate = $('forDate').value || todayStr();
+  openSheet(`
+    <h3>Check your order</h3>
+    <div class="sub">${esc(name)} · ${esc(phone)} · for ${esc(fmtDate(forDate))}</div>
+    <ul class="lines">${items.map((it) => `<li><span>${esc(it.product)}</span><b>${fmtQty(it.qty, it.unit)}</b></li>`).join('')}</ul>
+    ${notes ? `<p class="sub">Note: ${esc(notes)}</p>` : ''}
+    <div class="actions">
+      <button class="btn primary" id="confirmBtn">Place order</button>
+      <button class="btn ghost" id="editBtn">Change something</button>
+    </div>`);
+  $('editBtn').onclick = closeSheet;
+  $('confirmBtn').onclick = () => placeOrder({ name, phone, items, notes, forDate });
+});
+
+function placeOrder({ name, phone, items, notes, forDate }) {
+  const order = {
+    client_id: uid(), name, phone, notes, for_date: forDate, website: $('website').value,
+    items: items.map((i) => ({ product: i.product, qty: i.qty })), created_at: new Date().toISOString()
+  };
+  const list = outbox(); list.push({ state: 'pending', order, display: items }); saveOutbox(list);
+  // clear the form for the next order
+  qty = {}; LS.set('od_draft', qty); $('notes').value = ''; renderProducts(); updateBar();
+  currentSheet = order.client_id;
+  showPending(order);
+  flush();
+}
+
+function itemsOf(order) {
+  return (order.items || []).map((i) => ({ product: i.product, qty: i.qty, unit: i.unit || unitOf(i.product) }));
+}
+function shareText(order, res) {
+  const lines = itemsOf(order).map((i) => `${i.product} ${fmtQty(i.qty, i.unit)}`);
+  const head = res && res.order_no ? `Order #${res.order_no} (${res.customer_no})` : 'New order';
+  return [head, `${order.name} · ${order.phone}`, `For: ${fmtDate((res && res.for_date) || order.for_date)}`, '', ...lines,
+    order.notes ? `\nNote: ${order.notes}` : ''].join('\n').trim();
+}
+function waLink(text) {
+  const base = CONFIG.SHOP_WHATSAPP ? `https://wa.me/${CONFIG.SHOP_WHATSAPP.replace(/\D/g, '')}` : 'https://wa.me/';
+  return `${base}?text=${encodeURIComponent(text)}`;
+}
+function itemList(order) {
+  return `<ul class="lines">${itemsOf(order).map((it) => `<li><span>${esc(it.product)}</span><b>${fmtQty(it.qty, it.unit)}</b></li>`).join('')}</ul>`;
+}
+
+function showPending(order) {
+  const offline = !navigator.onLine || !configured;
+  openSheet(`
+    <div class="done">
+      <span class="pill amber">${offline ? 'Saved on your phone' : 'Sending…'}</span>
+      <p class="sub" style="margin-top:12px">${offline
+        ? 'No connection right now. Your order is saved and will send automatically when you open this page with signal.'
+        : 'One moment — sending your order to the shop.'}</p>
+    </div>
+    ${itemList(order)}
+    <div class="actions">
+      <a class="btn wa" style="text-align:center;text-decoration:none" href="${waLink(shareText(order))}" target="_blank" rel="noopener">Also send on WhatsApp</a>
+      <button class="btn ghost" id="closeBtn">Done</button>
+    </div>`);
+  $('closeBtn').onclick = closeSheet;
+}
+
+function showDone(order, res) {
+  const newCust = res.customer_is_new
+    ? `<p class="sub">Welcome! Your customer number is <b>${esc(res.customer_no)}</b>. Mention it when you collect.</p>`
+    : `<p class="sub">Customer ${esc(res.customer_no)} · for ${esc(fmtDate(res.for_date))}</p>`;
+  openSheet(`
+    <div class="done">
+      <span class="pill teal">Order received</span>
+      <div class="big">#${esc(res.order_no)}</div>
+      ${newCust}
+    </div>
+    ${itemList(order)}
+    <div class="actions">
+      <a class="btn wa" style="text-align:center;text-decoration:none" href="${waLink(shareText(order, res))}" target="_blank" rel="noopener">Share on WhatsApp</a>
+      <button class="btn ghost" id="closeBtn">Done</button>
+    </div>`);
+  $('closeBtn').onclick = closeSheet;
+}
+
+function showRejected(entry) {
+  if (!entry) return;
+  openSheet(`
+    <div class="done"><span class="pill red">Not accepted</span>
+      <p class="sub" style="margin-top:12px">${esc(entry.error)}</p></div>
+    ${itemList(entry.order)}
+    <div class="actions">
+      <button class="btn primary" id="fixBtn">Edit and send again</button>
+      <button class="btn ghost" id="closeBtn">Close</button>
+    </div>`);
+  $('closeBtn').onclick = closeSheet;
+  $('fixBtn').onclick = () => editRejected(entry.order.client_id);
+}
+
+function editRejected(clientId) {
+  const all = outbox(); const idx = all.findIndex((o) => o.order.client_id === clientId);
+  if (idx < 0) return;
+  const o = all[idx].order;
+  qty = {}; o.items.forEach((i) => { if (products.some((p) => p.name === i.product)) qty[i.product] = i.qty; });
+  $('name').value = o.name; $('phone').value = o.phone; $('notes').value = o.notes || ''; $('forDate').value = o.for_date || todayStr();
+  all.splice(idx, 1); saveOutbox(all); LS.set('od_draft', qty);
+  renderProducts(); updateBar(); closeSheet(); window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ---------- header, banners, history ---------- */
+function setTitle() { $('shopName').textContent = CONFIG.SHOP_NAME; document.title = CONFIG.SHOP_NAME + ' · Order'; }
+function renderWho() {
+  const me = LS.get('od_me', null), no = LS.get('od_customer_no', '');
+  $('who').innerHTML = me ? `${esc(me.name.split(' ')[0])}${no ? `<b>${esc(no)}</b>` : ''}` : '';
+}
+function renderBanners() {
+  const list = outbox();
+  const pending = list.filter((o) => o.state === 'pending').length;
+  const rejected = list.filter((o) => o.state === 'rejected');
+  let html = '';
+  if (!configured) html += `<div class="banner err">Setup needed: paste your Apps Script URL into ENDPOINT in index.html. Orders are being kept on this phone until then.</div>`;
+  if (pending) html += `<div class="banner warn">⏳ ${pending} order${pending > 1 ? 's' : ''} waiting to send${sending ? '…' : navigator.onLine ? '' : ' — no connection'}
+    ${!sending && configured ? '<button class="btn ghost small" id="retryBtn">Send now</button>' : ''}</div>`;
+  rejected.forEach((r) => {
+    html += `<div class="banner err">Order not accepted: ${esc(r.error)}
+      <button class="btn ghost small" data-fix="${esc(r.order.client_id)}">Fix</button></div>`;
+  });
+  if (!navigator.onLine && !pending) html += `<div class="banner info">You're offline. You can still place an order — it sends when you're back online.</div>`;
+  $('banners').innerHTML = html;
+  const rb = $('retryBtn'); if (rb) rb.onclick = flush;
+  $('banners').querySelectorAll('[data-fix]').forEach((b) => { b.onclick = () => editRejected(b.dataset.fix); });
+}
+function renderHistory() {
+  const h = LS.get('od_history', []);
+  $('histCard').hidden = !h.length;
+  $('hist').innerHTML = h.map((x) => `<li><span>#${esc(x.order_no)} · ${esc(x.items.map((i) => i.product).join(', '))}</span>
+    <span class="when">${esc(fmtDate(x.for_date))}</span></li>`).join('');
+}
+
+/* ---------- start ---------- */
+(function init() {
+  CONFIG.SHOP_NAME = LS.get('od_shop', CONFIG.SHOP_NAME);
+  setTitle();
+  const me = LS.get('od_me', null);
+  if (me) { $('name').value = me.name; $('phone').value = me.phone; }
+  $('forDate').value = todayStr(); $('forDate').min = todayStr();
+  qty = LS.get('od_draft', {});
+  renderProducts(); updateBar(); renderWho(); renderBanners(); renderHistory();
+  loadProducts();
+  flush();
+  window.addEventListener('online', () => { renderBanners(); flush(); loadProducts(); });
+  window.addEventListener('offline', renderBanners);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') flush(); });
+  setInterval(() => { if (navigator.onLine) flush(); }, 30000);
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+})();
+</script>
+</body>
+</html>
